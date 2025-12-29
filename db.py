@@ -1,4 +1,4 @@
-import sqlite3, os, jdatetime, bcrypt
+import sqlite3, os, jdatetime, bcrypt, random
 from pathlib import Path
 
 DB_PATH = Path("instance/db.sqlite")
@@ -167,8 +167,6 @@ class User:
         except (ValueError, TypeError, bcrypt.error) as e:
             raise RuntimeError(f"Error during authentication: {e}") from e
 
-
-import random
 
 class LunchEvent:
     def __init__(self, id=-1, event_date="", payer_id=None):
