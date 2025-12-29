@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}مدیریت کاربران{% endblock %}
+
+{% block body %}
+<div class="container">
+    <div class="nav">
+        <a href="{{ url_for('index') }}">خانه</a> |
+        <a href="{{ url_for('logout') }}">خروج</a>
+    </div>
+    
+    <h1>مدیریت کاربران</h1>
+    
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+    {% for message in messages %}
+    <div class="flash">{{ message }}</div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+    
+    <div class="card">
+        <table>
+            <thead>
+                <tr>
+                    <th>نام کاربری</th>
+                    <th>نام نمایشی</th>
+                    <th>نقش</th>
+                    <th>وضعیت</th>
+                    <th>عملیات</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                <tr>
+                    <td>{{ user.name }}</td>
+                    <td>{{ user.display_name }}</td>
+                    <td>{{ user.role }}</td>
+                    <td>{{ 'فعال' if user.is_active else 'غیرفعال' }}</td>
+                    <td>
+                        {% if user.is_active %}
+                        <form method="POST" action="{{ url_for('deactivate_user', user_id=user.id) }}" style="display: inline;">
+                            <button type="submit" class="btn-remove">غیرفعال</button>
+                        </form>
+                        {% else %}
+                        <form method="POST" action="{{ url_for('activate_user', user_id=user.id) }}" style="display: inline;">
+                            <button type="submit" class="btn-attend">فعال</button>
+                        </form>
+                        {% endif %}
+                        {% if current_user.role == 'archadmin' and user.role != 'admin' and user.role != 'archadmin' %}
+                        <form method="POST" action="{{ url_for('promote_user', user_id=user.id) }}" style="display: inline;">
+                            <button type="submit" class="btn-pay">ارتقا به ادمین</button>
+                        </form>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

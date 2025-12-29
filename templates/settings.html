@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block title %}تنظیمات{% endblock %}
+
+{% block body %}
+<div class="container-small">
+    <div class="card">
+        <h1>تنظیمات حساب</h1>
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+        {% for message in messages %}
+        <div class="flash">{{ message }}</div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+        <h2>تغییر رمز عبور</h2>
+        <form method="POST" action="{{ url_for('change_password') }}">
+            <input type="password" name="old_password" placeholder="رمز عبور فعلی" required>
+            <input type="password" name="new_password1" placeholder="رمز عبور جدید" required>
+            <button type="submit" class="btn-primary btn-full">تغییر رمز عبور</button>
+        </form>
+        <p><a href="{{ url_for('index') }}">بازگشت به خانه</a></p>
+    </div>
+</div>
+{% endblock %}

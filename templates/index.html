@@ -1,44 +1,14 @@
-<!DOCTYPE html>
-<html lang="fa" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ناهار</title>
-    <style>
-        body {
-            font-family: Tahoma, Arial, sans-serif;
-            max-width: 600px;
-            margin: 50px auto;
-            padding: 20px;
-            text-align: center;
-        }
-        a {
-            display: inline-block;
-            padding: 15px 30px;
-            margin: 10px;
-            background-color: #4CAF50;
-            color: white;
-            text-decoration: none;
-            border-radius: 8px;
-            font-size: 1.2em;
-        }
-        a:hover {
-            background-color: #45a049;
-        }
-        .secondary {
-            background-color: #2196F3;
-        }
-        .secondary:hover {
-            background-color: #1976D2;
-        }
-    </style>
-</head>
-<body>
+{% extends "base.html" %}
+
+{% block title %}سامانه ناهار{% endblock %}
+
+{% block body %}
+<div class="container-medium">
     <h1>🍽️ سامانه ناهار</h1>
     <p>به سامانه مدیریت ناهار و نوشیدنی خوش آمدید</p>
     <div>
-        <a href="{{ url_for('lunch') }}">نوبت نوشیدنی</a>
-        <a href="{{ url_for('login') }}" class="secondary">ورود</a>
+        <a href="{{ url_for('lunch') }}" class="btn btn-primary">نوبت نوشیدنی</a>
+        <a href="{{ url_for('login') }}" class="btn btn-secondary">ورود</a>
     </div>
-</body>
-</html>
+</div>
+{% endblock %}
