@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Settings{% endblock %}
+
+{% block body %}
+<div class="container">
+    <div class="nav">
+        <a href="{{ url_for('index') }}">Home</a> |
+        <a href="{{ url_for('list_users') }}">User Management</a> |
+        <a href="{{ url_for('logout') }}">Logout</a>
+    </div>
+    
+    <h1>Admin Settings</h1>
+    
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+    {% for message in messages %}
+    <div class="flash">{{ message }}</div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+    
+    <div class="card">
+        <h2>Administration</h2>
+        <p>Welcome to the admin panel. Use the links below to manage the system.</p>
+        <ul class="admin-menu">
+            <li><a href="{{ url_for('list_users') }}" class="btn btn-primary">Manage Users</a></li>
+            <li><a href="{{ url_for('account_settings') }}" class="btn btn-secondary">Change My Password</a></li>
+        </ul>
+    </div>
+    
+    <div class="card">
+        <h2>Quick Stats</h2>
+        <p>System overview and statistics will be displayed here.</p>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_styles %}
+.admin-menu {
+    list-style: none;
+    padding: 0;
+}
+.admin-menu li {
+    margin: 10px 0;
+}
+{% endblock %}

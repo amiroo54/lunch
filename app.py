@@ -26,12 +26,12 @@ def login():
     try:
         user = User.get_by_name(form["username"])
     except:
-        flash("کاربر وجود ندارد، لطفا ابتدا ثبت نام انجام دهید.")
+        flash("User not found. Please register first.")
         return render_template("login.html", form=form)
     if user.authenticate(form["password"]):
         res = login_user(user)
         if not user.is_active:
-            flash("اکانت شما غیر فعال است، لطفا با یکی از ادمین‌ها ارتباط برقرار کنید.")
+            flash("Your account is inactive. Please contact an admin.")
             return render_template("login.html", form=form)
         next_to_load = request.args.get('next')
         return redirect(next_to_load or url_for('index')) # Unsafe for now, will fix in production
@@ -60,12 +60,12 @@ def register():
 
     # create the user with active = 0 (inactive until approved)
     if User.exists(name):
-        flash("این کاربر آلردی وجود دارد.")
+        flash("This username already exists.")
         return render_template("register.html", form=form)
     
     new_emp = User(name=name, display_name=display_name, role=role, password=password)
     new_emp.save()
-    flash("ثبت نام شما انجام شد. لطفاً منتظر تأیید ادمین باشید.")
+    flash("Registration successful. Please wait for admin approval.")
     return redirect(url_for("login"))
 
 @app.route("/account/settings")
@@ -83,7 +83,7 @@ def change_password():
         current_user.update()
         return redirect(url_for("index"))
     else:
-        flash("رمز عبور اشتباه")
+        flash("Incorrect password")
         return redirect(url_for("account_settings"))
 # LANDING PAGE
 @app.route("/")
@@ -111,10 +111,10 @@ def activate_user(user_id):
     try:
         e = User.get_by_id(user_id)
     except:
-        flash("کاربر وجود ندارد")
+        flash("User not found")
         return abort(409)
     e.activate()
-    flash("کاربر با موفقیت فعال شد.")
+    flash("User activated successfully.")
     return redirect(url_for("list_users"))
 
 @app.route("/admin/deactivate/<int:user_id>", methods=["POST"])
@@ -125,10 +125,10 @@ def deactivate_user(user_id):
     try:
         e = User.get_by_id(user_id)
     except:
-        flash("کاربر وجود ندارد")
+        flash("User not found")
         return abort(409)
     e.deactivate()
-    flash("کاربر با موفقیت غیرفعال شد")
+    flash("User deactivated successfully.")
     return redirect(url_for("list_users"))
 
 @app.route("/admin/promote/<int:user_id>", methods=["POST"])
@@ -139,11 +139,36 @@ def promote_user(user_id):
     try: 
         e = User.get_by_id(user_id)
     except:
-        flash("کاربر وجود ندارد")
+        flash("User not found")
         return abort("409")
     e.role = "admin"
     e.update()
     return redirect(url_for("list_users"))
+
+@app.route("/admin/reset-password/<int:user_id>", methods=["POST"])
+@login_required
+def reset_user_password(user_id):
+    if not "admin" in current_user.role:
+        return abort(403)
+    try:
+        e = User.get_by_id(user_id)
+    except:
+        flash("User not found")
+        return abort(409)
+    
+    # Generate a simple default password
+    default_password = "password123"
+    e.set_password(default_password)
+    e.update_password()
+    flash(f"Password reset for {e.display_name}. New password: {default_password}")
+    return redirect(url_for("list_users"))
+
+@app.route("/admin/settings")
+@login_required
+def admin_settings():
+    if not "admin" in current_user.role:
+        return abort(403)
+    return render_template("admin_settings.html")
 
 # LUNCH TRACKING
 @app.route("/lunch", methods=["GET", "POST"])

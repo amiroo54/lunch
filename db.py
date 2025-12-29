@@ -147,6 +147,11 @@ class User:
             conn.commit()
         self.active = 0
 
+    def update_password(self):
+        with get_connection() as conn:
+            conn.execute("UPDATE users SET password=? WHERE id=?", [self.password, self.id])
+            conn.commit()
+
     @staticmethod
     def list_all():
         with get_connection() as conn:

@@ -6,6 +6,7 @@
 <div class="container">
     <div class="nav">
         <a href="{{ url_for('index') }}">Home</a> |
+        <a href="{{ url_for('admin_settings') }}">Admin Settings</a> |
         <a href="{{ url_for('logout') }}">Logout</a>
     </div>
     
@@ -14,7 +15,7 @@
     {% with messages = get_flashed_messages() %}
     {% if messages %}
     {% for message in messages %}
-    <div class="flash">{{ message }}</div>
+    <div class="flash flash-success">{{ message }}</div>
     {% endfor %}
     {% endif %}
     {% endwith %}
@@ -47,6 +48,9 @@
                             <button type="submit" class="btn-attend">Activate</button>
                         </form>
                         {% endif %}
+                        <form method="POST" action="{{ url_for('reset_user_password', user_id=user.id) }}" style="display: inline;">
+                            <button type="submit" class="btn-secondary" onclick="return confirm('Reset password for {{ user.display_name }}?')">Reset Password</button>
+                        </form>
                         {% if current_user.role == 'archadmin' and user.role != 'admin' and user.role != 'archadmin' %}
                         <form method="POST" action="{{ url_for('promote_user', user_id=user.id) }}" style="display: inline;">
                             <button type="submit" class="btn-pay">Promote to Admin</button>

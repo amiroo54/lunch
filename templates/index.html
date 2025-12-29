@@ -9,6 +9,10 @@
     <div>
         {% if current_user.is_authenticated %}
         <a href="{{ url_for('lunch') }}" class="btn btn-primary">Drinks Tracker</a>
+        <a href="{{ url_for('account_settings') }}" class="btn btn-secondary">Settings</a>
+        {% if 'admin' in current_user.role %}
+        <a href="{{ url_for('admin_settings') }}" class="btn btn-secondary">Admin</a>
+        {% endif %}
         <a href="{{ url_for('logout') }}" class="btn btn-secondary">Logout</a>
         {% else %}
         <a href="{{ url_for('login') }}" class="btn btn-secondary">Login</a>
