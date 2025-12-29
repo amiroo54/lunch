@@ -156,11 +156,14 @@ def reset_user_password(user_id):
         flash("User not found")
         return abort(409)
     
-    # Generate a simple default password
-    default_password = "password123"
-    e.set_password(default_password)
+    # Generate a random password
+    import secrets
+    import string
+    alphabet = string.ascii_letters + string.digits
+    new_password = ''.join(secrets.choice(alphabet) for _ in range(12))
+    e.set_password(new_password)
     e.update_password()
-    flash(f"Password reset for {e.display_name}. New password: {default_password}")
+    flash(f"Password reset for {e.display_name}. New password: {new_password}")
     return redirect(url_for("list_users"))
 
 @app.route("/admin/settings")
