@@ -95,12 +95,12 @@ class User:
             with get_connection() as conn:
                 if not User.exists(self.id):
                     user_count = conn.execute("SELECT COUNT(*) FROM users").fetchone()["COUNT(*)"]
-                    if User_count == 0:
+                    if user_count == 0:
                         self._active = True
                         self.role = "archadmin"
                     cur = conn.cursor()
                     cur.execute(
-                        "INSERT INTO users (name, display_name, role, password, active) VALUES (?, ?, ?, ?, ?, ?)",
+                        "INSERT INTO users (name, display_name, role, password, active) VALUES (?, ?, ?, ?, ?)",
                         [self.name, self.display_name, self.role, self.password, int(self.is_active)]
                     )
                     self.id = cur.lastrowid
@@ -113,6 +113,7 @@ class User:
             raise RuntimeError(f"Database error while saving User: {e}") from e
         except Exception as e:
             raise RuntimeError(f"Unexpected error while saving User: {e}") from e
+
 
     def update(self):
         try:
@@ -156,7 +157,7 @@ class User:
                 e.password = r["password"]
                 e._active = bool(r["active"])
                 users.append(e)
-            return Users
+            return users
 
     def authenticate(self, password):
         try:
@@ -165,7 +166,166 @@ class User:
             return bcrypt.checkpw(password.encode("utf8"), self.password)
         except (ValueError, TypeError, bcrypt.error) as e:
             raise RuntimeError(f"Error during authentication: {e}") from e
-      
+
+
+import random
+
+class LunchEvent:
+    def __init__(self, id=-1, event_date="", payer_id=None):
+        self.id = id
+        self.event_date = event_date
+        self.payer_id = payer_id
+
+    @staticmethod
+    def get_or_create_by_date(event_date):
+        with get_connection() as conn:
+            res = conn.execute("SELECT * FROM lunch_events WHERE event_date=?", [event_date]).fetchone()
+            if res:
+                return LunchEvent(res["id"], res["event_date"], res["payer_id"])
+            else:
+                cur = conn.cursor()
+                cur.execute("INSERT INTO lunch_events (event_date) VALUES (?)", [event_date])
+                conn.commit()
+                return LunchEvent(cur.lastrowid, event_date, None)
+
+    @staticmethod
+    def get_by_date(event_date):
+        with get_connection() as conn:
+            res = conn.execute("""
+                SELECT le.*, u.display_name as payer_name
+                FROM lunch_events le
+                LEFT JOIN Users u ON le.payer_id = u.id
+                WHERE le.event_date=?
+            """, [event_date]).fetchone()
+            if res:
+                e = LunchEvent(res["id"], res["event_date"], res["payer_id"])
+                e.payer_name = res["payer_name"]
+                return e
+            return None
+
+    def set_payer(self, user_id):
+        with get_connection() as conn:
+            conn.execute("UPDATE lunch_events SET payer_id=? WHERE id=?", [user_id, self.id])
+            conn.commit()
+        self.payer_id = user_id
+
+    def add_attendee(self, user_id):
+        with get_connection() as conn:
+            try:
+                conn.execute("INSERT INTO lunch_attendance (lunch_event_id, user_id) VALUES (?, ?)", [self.id, user_id])
+                conn.commit()
+            except sqlite3.IntegrityError:
+                pass  # Already exists
+
+    def remove_attendee(self, user_id):
+        with get_connection() as conn:
+            conn.execute("DELETE FROM lunch_attendance WHERE lunch_event_id=? AND user_id=?", [self.id, user_id])
+            conn.commit()
+
+    def get_attendees(self):
+        with get_connection() as conn:
+            rows = conn.execute("""
+                SELECT u.* FROM Users u
+                JOIN lunch_attendance la ON la.user_id = u.id
+                WHERE la.lunch_event_id = ?
+            """, [self.id]).fetchall()
+            users = []
+            for r in rows:
+                e = User(id=r["id"], name=r["name"], display_name=r["display_name"], role=r["role"])
+                e._active = bool(r["active"])
+                users.append(e)
+            return users
+
+    @staticmethod
+    def get_user_stats():
+        """Returns dict of user_id -> {'paid': count, 'drank': count}"""
+        with get_connection() as conn:
+            # Get drink counts (attendance)
+            drank_rows = conn.execute("""
+                SELECT user_id, COUNT(*) as drank_count
+                FROM lunch_attendance
+                GROUP BY user_id
+            """).fetchall()
+            
+            # Get paid counts
+            paid_rows = conn.execute("""
+                SELECT payer_id, COUNT(*) as paid_count
+                FROM lunch_events
+                WHERE payer_id IS NOT NULL
+                GROUP BY payer_id
+            """).fetchall()
+            
+            stats = {}
+            for row in drank_rows:
+                user_id = row["user_id"]
+                stats[user_id] = {'paid': 0, 'drank': row["drank_count"]}
+            
+            for row in paid_rows:
+                user_id = row["payer_id"]
+                if user_id in stats:
+                    stats[user_id]['paid'] = row["paid_count"]
+                else:
+                    stats[user_id] = {'paid': row["paid_count"], 'drank': 0}
+            
+            return stats
+
+    @staticmethod
+    def get_next_payer(attendee_ids):
+        """
+        Returns the user who should pay next based on paid-to-drank ratio.
+        Logic: lowest ratio pays next. If tie, random selection.
+        Only considers users in attendee_ids.
+        """
+        if not attendee_ids:
+            return None
+        
+        stats = LunchEvent.get_user_stats()
+        
+        # Calculate ratios for attendees
+        ratios = []
+        for user_id in attendee_ids:
+            if user_id in stats:
+                paid = stats[user_id]['paid']
+                drank = stats[user_id]['drank']
+            else:
+                paid = 0
+                drank = 0
+            
+            # Ratio: paid / drank (avoid division by zero)
+            if drank == 0:
+                ratio = 0  # Never drank, lowest priority (will be 0)
+            else:
+                ratio = paid / drank
+            
+            ratios.append((user_id, ratio))
+        
+        # Find minimum ratio
+        min_ratio = min(r[1] for r in ratios)
+        
+        # Get all users with minimum ratio
+        candidates = [r[0] for r in ratios if r[1] == min_ratio]
+        
+        # Random selection if tie
+        return random.choice(candidates)
+
+    @staticmethod
+    def list_recent(limit=10):
+        """List recent lunch events"""
+        with get_connection() as conn:
+            rows = conn.execute("""
+                SELECT le.*, u.display_name as payer_name
+                FROM lunch_events le
+                LEFT JOIN Users u ON le.payer_id = u.id
+                ORDER BY le.event_date DESC
+                LIMIT ?
+            """, [limit]).fetchall()
+            events = []
+            for r in rows:
+                e = LunchEvent(r["id"], r["event_date"], r["payer_id"])
+                e.payer_name = r["payer_name"]
+                events.append(e)
+            return events
+
 
 def get_connection():
     connection = sqlite3.connect(DB_PATH)
