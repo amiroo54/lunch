@@ -1,11 +1,11 @@
 {% extends "base.html" %}
 
-{% block title %}ورود{% endblock %}
+{% block title %}Login{% endblock %}
 
 {% block body %}
 <div class="container-small">
     <div class="card">
-        <h1>ورود</h1>
+        <h1>Login</h1>
         {% with messages = get_flashed_messages() %}
         {% if messages %}
         {% for message in messages %}
@@ -14,11 +14,11 @@
         {% endif %}
         {% endwith %}
         <form method="POST">
-            <input type="text" name="username" placeholder="نام کاربری" required value="{{ form.username if form else '' }}">
-            <input type="password" name="password" placeholder="رمز عبور" required>
-            <button type="submit" class="btn-primary btn-full">ورود</button>
+            <input type="text" name="username" placeholder="Username" required value="{{ form.username if form else '' }}">
+            <input type="password" name="password" placeholder="Password" required>
+            <button type="submit" class="btn-primary btn-full">Login</button>
         </form>
-        <p>حساب ندارید؟ <a href="{{ url_for('register') }}">ثبت نام</a></p>
+        <p>Don't have an account? <a href="{{ url_for('register') }}">Register</a></p>
     </div>
 </div>
 {% endblock %}

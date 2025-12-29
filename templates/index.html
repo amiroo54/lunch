@@ -1,14 +1,19 @@
 {% extends "base.html" %}
 
-{% block title %}سامانه ناهار{% endblock %}
+{% block title %}Lunch System{% endblock %}
 
 {% block body %}
 <div class="container-medium">
-    <h1>🍽️ سامانه ناهار</h1>
-    <p>به سامانه مدیریت ناهار و نوشیدنی خوش آمدید</p>
+    <h1>🍽️ Lunch System</h1>
+    <p>Welcome to the lunch and drinks management system</p>
     <div>
-        <a href="{{ url_for('lunch') }}" class="btn btn-primary">نوبت نوشیدنی</a>
-        <a href="{{ url_for('login') }}" class="btn btn-secondary">ورود</a>
+        {% if current_user.is_authenticated %}
+        <a href="{{ url_for('lunch') }}" class="btn btn-primary">Drinks Tracker</a>
+        <a href="{{ url_for('logout') }}" class="btn btn-secondary">Logout</a>
+        {% else %}
+        <a href="{{ url_for('login') }}" class="btn btn-secondary">Login</a>
+        <a href="{{ url_for('register') }}" class="btn btn-primary">Register</a>
+        {% endif %}
     </div>
 </div>
 {% endblock %}

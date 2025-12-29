@@ -1,16 +1,16 @@
 {% extends "base.html" %}
 
-{% block title %}خروج{% endblock %}
+{% block title %}Logout{% endblock %}
 
 {% block body %}
 <div class="container-small">
     <div class="card">
-        <h1>خروج</h1>
-        <p>آیا مطمئن هستید که می‌خواهید خارج شوید؟</p>
+        <h1>Logout</h1>
+        <p>Are you sure you want to logout?</p>
         <form method="POST">
-            <button type="submit" class="btn-primary btn-full">بله، خارج شو</button>
+            <button type="submit" class="btn-primary btn-full">Yes, Logout</button>
         </form>
-        <p><a href="{{ url_for('index') }}">بازگشت به خانه</a></p>
+        <p><a href="{{ url_for('index') }}">Back to Home</a></p>
     </div>
 </div>
 {% endblock %}

@@ -1,15 +1,15 @@
 {% extends "base.html" %}
 
-{% block title %}مدیریت کاربران{% endblock %}
+{% block title %}User Management{% endblock %}
 
 {% block body %}
 <div class="container">
     <div class="nav">
-        <a href="{{ url_for('index') }}">خانه</a> |
-        <a href="{{ url_for('logout') }}">خروج</a>
+        <a href="{{ url_for('index') }}">Home</a> |
+        <a href="{{ url_for('logout') }}">Logout</a>
     </div>
     
-    <h1>مدیریت کاربران</h1>
+    <h1>User Management</h1>
     
     {% with messages = get_flashed_messages() %}
     {% if messages %}
@@ -23,11 +23,11 @@
         <table>
             <thead>
                 <tr>
-                    <th>نام کاربری</th>
-                    <th>نام نمایشی</th>
-                    <th>نقش</th>
-                    <th>وضعیت</th>
-                    <th>عملیات</th>
+                    <th>Username</th>
+                    <th>Display Name</th>
+                    <th>Role</th>
+                    <th>Status</th>
+                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -36,20 +36,20 @@
                     <td>{{ user.name }}</td>
                     <td>{{ user.display_name }}</td>
                     <td>{{ user.role }}</td>
-                    <td>{{ 'فعال' if user.is_active else 'غیرفعال' }}</td>
+                    <td>{{ 'Active' if user.is_active else 'Inactive' }}</td>
                     <td>
                         {% if user.is_active %}
                         <form method="POST" action="{{ url_for('deactivate_user', user_id=user.id) }}" style="display: inline;">
-                            <button type="submit" class="btn-remove">غیرفعال</button>
+                            <button type="submit" class="btn-remove">Deactivate</button>
                         </form>
                         {% else %}
                         <form method="POST" action="{{ url_for('activate_user', user_id=user.id) }}" style="display: inline;">
-                            <button type="submit" class="btn-attend">فعال</button>
+                            <button type="submit" class="btn-attend">Activate</button>
                         </form>
                         {% endif %}
                         {% if current_user.role == 'archadmin' and user.role != 'admin' and user.role != 'archadmin' %}
                         <form method="POST" action="{{ url_for('promote_user', user_id=user.id) }}" style="display: inline;">
-                            <button type="submit" class="btn-pay">ارتقا به ادمین</button>
+                            <button type="submit" class="btn-pay">Promote to Admin</button>
                         </form>
                         {% endif %}
                     </td>

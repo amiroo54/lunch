@@ -1,37 +1,37 @@
 {% extends "base.html" %}
 
-{% block title %}نوبت نوشیدنی{% endblock %}
+{% block title %}Drinks Tracker{% endblock %}
 
 {% block body %}
 <div class="container">
     <div class="nav">
-        <a href="{{ url_for('index') }}">خانه</a> |
-        <a href="{{ url_for('logout') }}">خروج</a>
+        <a href="{{ url_for('index') }}">Home</a> |
+        <a href="{{ url_for('logout') }}">Logout</a>
     </div>
 
-    <h1>🥤 نوبت نوشیدنی - {{ today }}</h1>
+    <h1>🥤 Drinks Tracker - {{ today }}</h1>
 
     {% if next_payer_user %}
     <div class="card next-payer">
-        <p>نفر بعدی که باید نوشیدنی بخرد:</p>
+        <p>Next person to buy drinks:</p>
         <h2>{{ next_payer_user.display_name }}</h2>
     </div>
     {% else %}
     <div class="card">
-        <p>حضوری ثبت نشده است. لطفا افراد حاضر را انتخاب کنید.</p>
+        <p>No attendance recorded. Please select the people who are present.</p>
     </div>
     {% endif %}
 
     <div class="card">
-        <h2>حضور امروز</h2>
-        <p>افرادی که امروز ناهار بودند را انتخاب کنید:</p>
+        <h2>Today's Attendance</h2>
+        <p>Select who was at lunch today:</p>
         <ul class="user-list">
             {% for user in all_users %}
             <li class="user-item {% if user.id in attendee_ids %}attending{% endif %}">
                 <span>
                     {{ user.display_name }}
                     <span class="stats">
-                        (پرداخت: {{ stats.get(user.id, {}).get('paid', 0) }} | نوشید: {{ stats.get(user.id, {}).get('drank', 0) }})
+                        (Paid: {{ stats.get(user.id, {}).get('paid', 0) }} | Drank: {{ stats.get(user.id, {}).get('drank', 0) }})
                     </span>
                 </span>
                 <span>
@@ -39,16 +39,16 @@
                         <input type="hidden" name="action" value="toggle_attendance">
                         <input type="hidden" name="user_id" value="{{ user.id }}">
                         {% if user.id in attendee_ids %}
-                        <button type="submit" class="btn-remove">حذف</button>
+                        <button type="submit" class="btn-remove">Remove</button>
                         {% else %}
-                        <button type="submit" class="btn-attend">حاضر</button>
+                        <button type="submit" class="btn-attend">Present</button>
                         {% endif %}
                     </form>
                     {% if user.id in attendee_ids %}
                     <form method="POST" style="display: inline;">
                         <input type="hidden" name="action" value="set_payer">
                         <input type="hidden" name="payer_id" value="{{ user.id }}">
-                        <button type="submit" class="btn-pay">پرداخت کرد</button>
+                        <button type="submit" class="btn-pay">Paid</button>
                     </form>
                     {% endif %}
                 </span>
@@ -59,19 +59,19 @@
 
     {% if event and event.payer_id %}
     <div class="card">
-        <h3>✅ امروز پرداخت شد توسط: {{ event.payer_name if event.payer_name else 'نامشخص' }}</h3>
+        <h3>✅ Today's payer: {{ event.payer_name if event.payer_name else 'Unknown' }}</h3>
     </div>
     {% endif %}
 
     <div class="card">
-        <h2>آمار کاربران</h2>
+        <h2>User Statistics</h2>
         <table>
             <thead>
                 <tr>
-                    <th>نام</th>
-                    <th>تعداد پرداخت</th>
-                    <th>تعداد نوشیدن</th>
-                    <th>نسبت</th>
+                    <th>Name</th>
+                    <th>Times Paid</th>
+                    <th>Times Drank</th>
+                    <th>Ratio</th>
                 </tr>
             </thead>
             <tbody>
@@ -92,12 +92,12 @@
     </div>
 
     <div class="card">
-        <h2>تاریخچه اخیر</h2>
+        <h2>Recent History</h2>
         <table>
             <thead>
                 <tr>
-                    <th>تاریخ</th>
-                    <th>پرداخت‌کننده</th>
+                    <th>Date</th>
+                    <th>Payer</th>
                 </tr>
             </thead>
             <tbody>
